@@ -1,0 +1,43 @@
+# spring
+spring:
+  # profiles
+  profiles:
+    active: dev
+  # datasource
+  datasource:
+    url: jdbc:log4jdbc:mysql://10.69.112.3:3306/personalization
+    username: personalization
+    password: "personalization123"
+  cache:
+    type: redis
+  redis:
+    host: 10.33.46.124
+    port: 6379
+    database: 0
+
+logging:
+  path: .log
+  level:
+    com:
+      lguplus:
+        homeshoppingmoa: debug
+    jdbc:
+      sqltiming: debug
+      resultsettable: debug
+      connection: debug
+
+# homeshoppingmoa subdomain
+homeshoppingmoa:
+  subdomain:
+    uri-root:
+      ncas: http://192.168.0.178:9075
+      broadcastproduct: http://192.168.0.177:9020
+
+# openfeign
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+        loggerLevel: FULL

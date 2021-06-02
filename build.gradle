@@ -1,0 +1,638 @@
+// 프로젝트의 모든 모듈에 공통
+plugins {
+    id "idea"
+    id "eclipse"
+    id "java"
+    id "java-library"
+    id "org.springframework.boot" version "2.4.4" apply false
+    id "io.spring.dependency-management" version "1.0.11.RELEASE" apply false
+    id "com.diffplug.eclipse.apt" version "3.26.0"
+}
+
+// 모든 프로젝트 적용사항
+allprojects {
+    apply plugin: 'idea'
+    apply plugin: 'eclipse'
+    apply plugin: 'java'
+    apply plugin: 'java-library'
+
+    repositories {
+        mavenCentral()
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+
+    group 'lguplus.homeshoppingmoa'
+    version '1.0-SNAPSHOT'
+
+    // 자바버전 지정
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+    // 컴파일 인코딩 옵션
+    compileJava.options.encoding = "UTF-8"
+    compileTestJava.options.encoding = "UTF-8"
+
+    // 컴파일 옵션지정
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xlint:-unchecked" << "-Xlint:-deprecation"
+        options.fork = true
+        options.forkOptions.executable = 'javac'
+    }
+
+    jar {
+        enabled = false
+    }
+}
+
+// 하위 프로젝트
+subprojects {
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
+
+    dependencyManagement {
+        imports {
+            mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springBootCloudVersion}"
+        }
+    }
+
+    // 공통설정
+    configurations {
+        all.collect { configuration ->
+            // configuration.exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+        }
+    }
+
+    // 의존성
+    dependencies {
+        // configuration processor
+        implementation("org.springframework.boot:spring-boot-configuration-processor")
+
+        // jackson
+        // https://github.com/FasterXML/jackson-modules-base/tree/master/afterburner
+        implementation("com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
+        implementation("com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}")
+        implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:${jacksonVersion}")
+        implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}")
+        implementation("com.fasterxml.jackson.module:jackson-module-afterburner:${jacksonVersion}")
+        implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:${jacksonVersion}")
+
+        // lombok
+        compileOnly("org.projectlombok:lombok:${lombokVersion}")
+        // mapstruct
+        compileOnly("org.mapstruct:mapstruct:${mapstructVersion}")
+        compileOnly("org.mapstruct:mapstruct-processor:${mapstructVersion}")
+        compileOnly("org.projectlombok:lombok-mapstruct-binding:0.2.0")
+
+        // 이클립스에서 lombok과 mapstruct 사용, https://sonbbang78.tistory.com/2
+        annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
+        annotationProcessor("org.mapstruct:mapstruct-processor:${mapstructVersion}")
+        annotationProcessor("org.projectlombok:lombok-mapstruct-binding:0.2.0")
+        testAnnotationProcessor("org.projectlombok:lombok:${lombokVersion}")
+
+        // validation
+        implementation("org.springframework.boot:spring-boot-starter-validation")
+
+        // actuator
+        implementation("org.springframework.boot:spring-boot-starter-actuator")
+
+        // test
+        testImplementation("org.springframework.boot:spring-boot-starter-test")
+        // 추가, 없으면 JUnit5 테스트 시 오류 발생
+        testImplementation('org.junit.platform:junit-platform-launcher')
+        testImplementation('org.junit.jupiter:junit-jupiter-api')
+        testImplementation('org.junit.jupiter:junit-jupiter-params')
+        testImplementation('org.junit.jupiter:junit-jupiter-engine')
+    }
+
+    // 태스크 - scaffolding
+    task initSourceFolders {
+        sourceSets*.java.srcDirs*.each {
+            if (!it.exists()) {
+                it.mkdirs()
+            }
+        }
+
+        sourceSets*.resources.srcDirs*.each {
+            if (!it.exists()) {
+                it.mkdirs()
+            }
+        }
+    }
+
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// common
+// ---------------------------------------------------------------------------------------------------------------------
+project(":common") {
+
+    bootJar {
+        enabled = false
+    }
+    jar {
+        enabled = true
+    }
+
+    dependencies {
+        // springboot starter web
+        api("org.springframework.boot:spring-boot-starter-web")
+
+        // security
+        api('org.springframework.boot:spring-boot-starter-security')
+
+        // jwt, https://github.com/jwtk/jjwt
+        api("io.jsonwebtoken:jjwt-api:${jjwtVersion}")
+        api("io.jsonwebtoken:jjwt-impl:${jjwtVersion}")
+        api("io.jsonwebtoken:jjwt-jackson:${jjwtVersion}")
+
+        // mysql
+        compileOnly("mysql:mysql-connector-java:${mysqlConnectorVersion}")
+
+        // Jpa
+        api("org.springframework.boot:spring-boot-starter-data-jpa")
+
+        // https://log4jdbc.brunorozendo.com/
+        api("org.bgee.log4jdbc-log4j2:log4jdbc-log4j2-jdbc4.1:1.16")
+
+        api("org.apache.httpcomponents:httpclient:4.5.11")
+        api("commons-io:commons-io:2.8.0")
+        api("commons-fileupload:commons-fileupload:1.4")
+        api("org.apache.commons:commons-lang3:3.11")
+
+        // swagger 3
+        api("org.springdoc:springdoc-openapi-ui:${springdocVersion}")
+        api("org.springdoc:springdoc-openapi-security:${springdocVersion}")
+        api("org.springdoc:springdoc-openapi-data-rest:${springdocVersion}")
+
+        // querydsl
+        api("com.querydsl:querydsl-core")
+        api("com.querydsl:querydsl-jpa")
+
+        annotationProcessor("com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jpa") // querydsl JPAAnnotationProcessor 사용 지정
+        annotationProcessor("jakarta.persistence:jakarta.persistence-api") // java.lang.NoClassDefFoundError(javax.annotation.Entity) 발생 대응
+        annotationProcessor("jakarta.annotation:jakarta.annotation-api") // java.lang.NoClassDefFoundError (javax.annotation.Generated) 발생 대응
+
+        // openfeign
+        api("org.springframework.cloud:spring-cloud-starter-openfeign")
+        api("io.github.openfeign:feign-okhttp")
+
+        // User-Agent 파서
+        api("com.github.ua-parser:uap-java:1.5.2")
+    }
+
+    // 인텔리제이 Annotation processor 에 생성되는 'src/main/generated' 디렉터리 삭제
+    task cleanGeneatedDir(type: Delete) {
+        delete file('src/main/generated')
+    }
+
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// sample-service
+// ---------------------------------------------------------------------------------------------------------------------
+project(":sample-service") {
+
+    bootRun {
+        sourceResources sourceSets.main
+        main = 'com.lguplus.homeshoppingmoa.SampleApplication'
+        jvmArgs = [
+                "-server",
+                "-Xss256m",
+                "-Djava.net.preferIPv4Stack=true"
+        ]
+        if (project.hasProperty('args')) {
+            args project.args.split(',' as Closure)
+        }
+    }
+
+    bootJar {
+        archiveFileName = 'sample-service.jar'
+        mainClass.set("com.lguplus.homeshoppingmoa.SampleApplication")
+    }
+
+    dependencies {
+        // common
+        api project(':common')
+
+        // redis
+        implementation("org.springframework.boot:spring-boot-starter-data-redis")
+
+        // mysql
+        runtimeOnly("mysql:mysql-connector-java:${mysqlConnectorVersion}")
+
+        // cloud stream
+        implementation("org.springframework.cloud:spring-cloud-stream")
+        implementation("org.springframework.cloud:spring-cloud-starter-stream-kafka")
+
+        // gcp storage, https://dncjf64.tistory.com/313, https://deep-dive-dev.tistory.com/45
+        implementation platform("com.google.cloud:spring-cloud-gcp-dependencies:2.0.2")
+        implementation("com.google.cloud:spring-cloud-gcp-starter")
+        implementation("com.google.cloud:spring-cloud-gcp-starter-storage")
+
+        // thymeleaf
+        implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
+        implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect")
+    }
+
+    // JUnit5 테스트를 위해 추가
+    test {
+        // gradle 빌드 시 테스트 제외
+        exclude '**/*'
+        useJUnitPlatform()
+    }
+
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// OrganizedProductService
+// ---------------------------------------------------------------------------------------------------------------------
+project(":OrganizedProductService") {
+
+    bootRun {
+        sourceResources sourceSets.main
+        main = 'com.lguplus.homeshoppingmoa.OrganizedProductApplication'
+        jvmArgs = [
+                "-server",
+                "-Xss256m",
+                "-Djava.net.preferIPv4Stack=true"
+        ]
+        if (project.hasProperty('args')) {
+            args project.args.split(',' as Closure)
+        }
+    }
+
+    bootJar {
+        archiveFileName = 'OrganizedProductService.jar'
+        mainClass.set("com.lguplus.homeshoppingmoa.OrganizedProductApplication")
+    }
+
+    dependencies {
+        // common
+        api project(':common')
+
+        // mysql
+        runtimeOnly("mysql:mysql-connector-java:${mysqlConnectorVersion}")
+
+        // cloud stream
+        implementation("org.springframework.cloud:spring-cloud-stream")
+        implementation("org.springframework.cloud:spring-cloud-starter-stream-kafka")
+    }
+
+    // JUnit5 테스트를 위해 추가
+    test {
+        exclude '**/*'
+        useJUnitPlatform()
+    }
+
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// BroadcastProductService
+// ---------------------------------------------------------------------------------------------------------------------
+project(":BroadcastProductService") {
+
+    bootRun {
+        sourceResources sourceSets.main
+        main = 'com.lguplus.homeshoppingmoa.BroadcastProductApplication'
+        jvmArgs = [
+                "-server",
+                "-Xss256m",
+                "-Djava.net.preferIPv4Stack=true"
+        ]
+        if (project.hasProperty('args')) {
+            args project.args.split(',' as Closure)
+        }
+    }
+
+    bootJar {
+        archiveFileName = 'BroadcastProductService.jar'
+        mainClass.set("com.lguplus.homeshoppingmoa.BroadcastProductApplication")
+    }
+
+    dependencies {
+        // common
+        api project(':common')
+
+        // mysql
+        runtimeOnly("mysql:mysql-connector-java:${mysqlConnectorVersion}")
+
+        // cloud stream
+        implementation("org.springframework.cloud:spring-cloud-stream")
+        implementation("org.springframework.cloud:spring-cloud-starter-stream-kafka")
+
+        // querydsl
+        api("com.querydsl:querydsl-core")
+        api("com.querydsl:querydsl-jpa")
+
+        annotationProcessor("com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jpa") // querydsl JPAAnnotationProcessor 사용 지정
+        annotationProcessor("jakarta.persistence:jakarta.persistence-api") // java.lang.NoClassDefFoundError(javax.annotation.Entity) 발생 대응
+        annotationProcessor("jakarta.annotation:jakarta.annotation-api") // java.lang.NoClassDefFoundError (javax.annotation.Generated) 발생 대응
+
+        // gcp storage
+        implementation platform("com.google.cloud:spring-cloud-gcp-dependencies:2.0.2")
+        implementation("com.google.cloud:spring-cloud-gcp-starter")
+        implementation("com.google.cloud:spring-cloud-gcp-starter-storage")
+    }
+
+    // 인텔리제이 Annotation processor 에 생성되는 'src/main/generated' 디렉터리 삭제
+    task cleanGeneatedDir(type: Delete) {
+        delete file('src/main/generated')
+    }
+
+    // JUnit5 테스트를 위해 추가
+    test {
+        exclude '**/*'
+        useJUnitPlatform()
+    }
+
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// EventSubService
+// ---------------------------------------------------------------------------------------------------------------------
+project(":EventSubService") {
+
+    bootRun {
+        sourceResources sourceSets.main
+        main = 'com.lguplus.homeshoppingmoa.EventSubApplication'
+        jvmArgs = [
+                "-server",
+                "-Xss256m",
+                "-Djava.net.preferIPv4Stack=true"
+        ]
+        if (project.hasProperty('args')) {
+            args project.args.split(',' as Closure)
+        }
+    }
+
+    bootJar {
+        archiveFileName = 'EventSubService.jar'
+        mainClass.set("com.lguplus.homeshoppingmoa.EventSubApplication")
+    }
+
+    dependencies {
+        // common
+        api project(':common')
+
+        // redis
+        implementation("org.springframework.boot:spring-boot-starter-data-redis")
+
+        // cloud stream
+        implementation("org.springframework.cloud:spring-cloud-stream")
+        implementation("org.springframework.cloud:spring-cloud-starter-stream-kafka")
+    }
+
+    // JUnit5 테스트를 위해 추가
+    test {
+        exclude '**/*'
+        useJUnitPlatform()
+    }
+
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// BroadcastProductQueryService
+// ---------------------------------------------------------------------------------------------------------------------
+project(":BroadcastProductQueryService") {
+
+    bootRun {
+        sourceResources sourceSets.main
+        main = 'com.lguplus.homeshoppingmoa.BroadcastProductQueryApplication'
+        jvmArgs = [
+                "-server",
+                "-Xss256m",
+                "-Djava.net.preferIPv4Stack=true"
+        ]
+        if (project.hasProperty('args')) {
+            args project.args.split(',' as Closure)
+        }
+    }
+
+    bootJar {
+        archiveFileName = 'BroadcastProductQueryService.jar'
+        mainClass.set("com.lguplus.homeshoppingmoa.BroadcastProductQueryApplication")
+    }
+
+    dependencies {
+        // common
+        api project(':common')
+
+        // redis
+        implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    }
+
+    // JUnit5 테스트를 위해 추가
+    test {
+        exclude '**/*'
+        useJUnitPlatform()
+    }
+
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// PersonalizationService
+// ---------------------------------------------------------------------------------------------------------------------
+project(":PersonalizationService") {
+
+    bootRun {
+        sourceResources sourceSets.main
+        main = 'com.lguplus.homeshoppingmoa.PersonalizationApplication'
+        jvmArgs = [
+                "-server",
+                "-Xss256m",
+                "-Djava.net.preferIPv4Stack=true"
+        ]
+        if (project.hasProperty('args')) {
+            args project.args.split(',' as Closure)
+        }
+    }
+
+    bootJar {
+        archiveFileName = 'PersonalizationService.jar'
+        mainClass.set("com.lguplus.homeshoppingmoa.PersonalizationApplication")
+    }
+
+    dependencies {
+        // common
+        api project(':common')
+
+        // mysql
+        runtimeOnly("mysql:mysql-connector-java:${mysqlConnectorVersion}")
+
+        // redis
+        implementation("org.springframework.boot:spring-boot-starter-data-redis")
+
+        // cloud stream
+        implementation("org.springframework.cloud:spring-cloud-stream")
+        implementation("org.springframework.cloud:spring-cloud-starter-stream-kafka")
+    }
+
+    // JUnit5 테스트를 위해 추가
+    test {
+        exclude '**/*'
+        useJUnitPlatform()
+    }
+
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// UplusLegacyService
+// ---------------------------------------------------------------------------------------------------------------------
+project(":UplusLegacyService") {
+
+    bootRun {
+        sourceResources sourceSets.main
+        main = 'com.lguplus.homeshoppingmoa.UplusLegacyApplication'
+        jvmArgs = [
+                "-server",
+                "-Xss256m",
+                "-Djava.net.preferIPv4Stack=true"
+        ]
+        if (project.hasProperty('args')) {
+            args project.args.split(',' as Closure)
+        }
+    }
+
+    bootJar {
+        archiveFileName = 'UplusLegacyService.jar'
+        mainClass.set("com.lguplus.homeshoppingmoa.UplusLegacyApplication")
+    }
+
+    dependencies {
+        // common
+        api project(':common')
+
+        // cloud stream
+        implementation("org.springframework.cloud:spring-cloud-stream")
+        implementation("org.springframework.cloud:spring-cloud-starter-stream-kafka")
+    }
+
+    // JUnit5 테스트를 위해 추가
+    test {
+        exclude '**/*'
+        useJUnitPlatform()
+    }
+
+}
+
+
+// ---------------------------------------------------------------------------------------------------------------------
+// NcasService
+// ---------------------------------------------------------------------------------------------------------------------
+project(":NcasService") {
+
+    bootRun {
+        sourceResources sourceSets.main
+        main = 'com.lguplus.homeshoppingmoa.NcasApplication'
+        jvmArgs = [
+                "-server",
+                "-Xss256m",
+                "-Djava.net.preferIPv4Stack=true"
+        ]
+        if (project.hasProperty('args')) {
+            args project.args.split(',' as Closure)
+        }
+    }
+
+    bootJar {
+        archiveFileName = 'NcasService.jar'
+        mainClass.set("com.lguplus.homeshoppingmoa.NcasApplication")
+    }
+
+    dependencies {
+        // common
+        api project(':common')
+    }
+
+    // JUnit5 테스트를 위해 추가
+    test {
+        exclude '**/*'
+        useJUnitPlatform()
+    }
+
+}
+
+
+// ---------------------------------------------------------------------------------------------------------------------
+// OperationService
+// ---------------------------------------------------------------------------------------------------------------------
+project(":OperationService") {
+
+    bootRun {
+        sourceResources sourceSets.main
+        main = 'com.lguplus.homeshoppingmoa.OperationApplication'
+        jvmArgs = [
+                "-server",
+                "-Xss256m",
+                "-Djava.net.preferIPv4Stack=true"
+        ]
+        if (project.hasProperty('args')) {
+            args project.args.split(',' as Closure)
+        }
+    }
+
+    bootJar {
+        archiveFileName = 'OperationService.jar'
+        mainClass.set("com.lguplus.homeshoppingmoa.OperationApplication")
+    }
+
+    dependencies {
+        // common
+        api project(':common')
+
+        // mysql
+        runtimeOnly("mysql:mysql-connector-java:${mysqlConnectorVersion}")
+    }
+
+    // JUnit5 테스트를 위해 추가
+    test {
+        exclude '**/*'
+        useJUnitPlatform()
+    }
+
+}
+
+
+// ---------------------------------------------------------------------------------------------------------------------
+// ServiceInfoService
+// ---------------------------------------------------------------------------------------------------------------------
+project(":ServiceInfoService") {
+
+    bootRun {
+        sourceResources sourceSets.main
+        main = 'com.lguplus.homeshoppingmoa.ServiceInfoApplication'
+        jvmArgs = [
+                "-server",
+                "-Xss256m",
+                "-Djava.net.preferIPv4Stack=true"
+        ]
+        if (project.hasProperty('args')) {
+            args project.args.split(',' as Closure)
+        }
+    }
+
+    bootJar {
+        archiveFileName = 'ServiceInfoService.jar'
+        mainClass.set("com.lguplus.homeshoppingmoa.ServiceInfoApplication")
+    }
+
+    dependencies {
+        // common
+        api project(':common')
+
+        // mysql
+        runtimeOnly("mysql:mysql-connector-java:${mysqlConnectorVersion}")
+
+        // gcp storage
+        implementation platform("com.google.cloud:spring-cloud-gcp-dependencies:2.0.2")
+        implementation("com.google.cloud:spring-cloud-gcp-starter")
+        implementation("com.google.cloud:spring-cloud-gcp-starter-storage")
+    }
+
+    // JUnit5 테스트를 위해 추가
+    test {
+        exclude '**/*'
+        useJUnitPlatform()
+    }
+
+}

@@ -1,0 +1,68 @@
+# spring
+spring:
+  # profiles
+  profiles:
+    active: local
+  # cloud
+  cloud:
+    stream:
+      bindings:
+        input-broadcast-product:
+          destination: topic-broadcast-product
+          content-type: application/json
+        output_message_request:
+          destination: topic-message
+          content-type: application/json
+        output_push_request:
+          destination: topic-push
+          content-type: application/json
+      kafka:
+        binder:
+          brokers: 192.168.0.177:9092
+  # datasource
+  datasource:
+    url: jdbc:log4jdbc:mysql://192.168.0.177:3306/personalization
+    username: personalization
+    password: "personalization123"
+#  jpa:
+#    hibernate:
+#      ddl-auto: update
+  # cache
+  cache:
+    type: redis
+  redis:
+    host: 192.168.0.178
+    port: 6379
+    database: 0
+
+# logging
+logging:
+  path: .log
+  level:
+    com:
+      lguplus:
+        homeshoppingmoa: debug
+    jdbc:
+      sqltiming: debug
+      resultsettable: debug
+      connection: debug
+
+# homeshoppingmoa subdomain
+homeshoppingmoa:
+  subdomain:
+    uri-root:
+      ncas: http://192.168.0.178:9075
+      broadcastproduct: http://192.168.0.177:9020
+
+# openfeign
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+        loggerLevel: FULL
+# gcp
+gcp:
+  storage:
+    root-uri: http://storage.googleapis.com/bucket-hssvc-dev

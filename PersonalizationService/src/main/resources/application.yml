@@ -1,0 +1,12 @@
+# server
+server:
+  port: ${PORT:9060}
+
+# spring, https://luvstudy.tistory.com/130
+spring:
+  config:
+    use-legacy-processing: true
+  profiles:
+    active: local
+  application:
+    name: PersonalizationService

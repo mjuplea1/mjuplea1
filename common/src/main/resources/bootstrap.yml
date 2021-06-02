@@ -1,0 +1,180 @@
+# spring cloud config-server 설정을 하지 않았기 때문에 PropertyLoader를 통해서 읽어서 사용
+server:
+  # port
+  port: 8080
+  # embedded tomcat
+  tomcat:
+    remoteip:
+      protocol-header: x-forwarded-proto
+      remote-ip-header: x-forwarded-for
+    uri-encoding: UTF-8
+    threads:
+      max: 300
+  # error
+  error:
+    whitelabel:
+      enabled: false
+    include-exception: false
+    include-stacktrace: never
+  # servlet settings
+  servlet:
+    encoding:
+      enabled: true
+      charset: UTF-8
+      force: true
+  forward-headers-strategy: native
+  shutdown: graceful
+
+# spring
+spring:
+  # profiles
+  profiles:
+    active: local
+  # application
+  application:
+    name: homeshoppingmoa
+  output:
+    ansi:
+      enabled: always
+  messages:
+    basename: i18n/messages
+    encoding: UTF-8
+    fallback-to-system-locale: false
+    use-code-as-default-message: true
+  # servlet settings
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+  mvc:
+    favicon:
+      enabled: false
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    url:
+    driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+    username:
+    password:
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 5
+      connection-timeout: 25000
+      validation-timeout: 20000
+      leak-detection-threshold: 10000
+      data-source-properties:
+        cachePrepStmts: true
+        prepStmtCacheSize: 250
+        prepStmtCacheSqlLimit: 2048
+        useServerPrepStmts: true
+        useSSL: false
+        useUnicode: yes
+        characterEncoding: utf-8
+        autoReconnect: true
+        allowPublicKeyRetrieval: true
+        serverTimezone: Asia/Seoul
+        verifyServerCertificate: false
+        requireSSL: false
+  jpa:
+    open-in-view: false
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 10
+  jackson:
+    serialization:
+      indent_output: true
+      WRITE_DATES_AS_TIMESTAMPS: false
+    date-format: yyyy-MM-dd HH:mm:ss
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
+# swagger (springdoc)
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    csrf:
+      enabled: false
+    display-request-duration: true
+    tags-sorter: alpha
+    operations-sorter: alpha
+
+# actuator
+management:
+  endpoint:
+    health:
+      show-details: never
+  endpoints:
+    web:
+      exposure:
+        include:
+          - "health"
+          - "metrics"
+
+# logging
+logging:
+  level:
+    root: info
+    com:
+      lguplus:
+        homeshoppingmoa: error
+    org:
+      apache:
+        http: error
+      springframework:
+        orm:
+          jpa: error
+        # 트랜잭션 로그
+        transaction: error
+    jdbc:
+      sqlonly: off
+      sqltiming: off
+      audit: off
+      resultset: off
+      resultsettable: off
+      connection: off
+
+homeshoppingmoa:
+  springdoc:
+    component:
+      security:
+        schema:
+          api:
+            key:
+  # homeshoppingmoa subdomain
+  subdomain:
+    uri-root:
+      # 방송상품 서비스
+      broadcastproduct:
+      # 편성상품 서비스
+      organizedproduct:
+      # 개인화 서비스
+      personalization:
+      # Uplus 레거시 서비스
+      upluslegacy:
+      # 운영 서비스
+      operation:
+      # 서비스정보 서비스
+      serviceinfo:
+
+# proxy
+proxy:
+  host: www.proxy.com
+  port: 3128
+  target:
+    - 10.10.10.1
+    - 10.10.10.2
+
+# openfeign
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+        loggerLevel: BASIC
+  okhttp:
+    enabled: true

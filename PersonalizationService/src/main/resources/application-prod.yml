@@ -1,0 +1,47 @@
+# spring
+spring:
+  # profiles
+  profiles:
+    active: prod
+  # datasource
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/homeshoppingmoa
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: homeshoppingmoa
+    password: "!@#HomeShoppingMoa123"
+    hikari:
+      minimum-idle: 50
+      maximum-pool-size: 50
+  cache:
+    type: redis
+  redis:
+    host: 192.168.0.178
+    port: 6379
+    database: 0
+
+logging:
+  path: .log
+  level:
+    com:
+      lguplus:
+        homeshoppingmoa: debug
+    jdbc:
+      sqltiming: debug
+      resultsettable: debug
+      connection: debug
+
+# homeshoppingmoa subdomain
+homeshoppingmoa:
+  subdomain:
+    uri-root:
+      ncas: http://192.168.0.178:9075
+      broadcastproduct: http://192.168.0.177:9020
+
+# openfeign
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+        loggerLevel: FULL
