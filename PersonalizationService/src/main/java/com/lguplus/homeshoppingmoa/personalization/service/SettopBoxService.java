@@ -1,6 +1,7 @@
 package com.lguplus.homeshoppingmoa.personalization.service;
 
 import com.lguplus.homeshoppingmoa.common.model.stb.dto.request.Payload;
+import com.lguplus.homeshoppingmoa.common.model.stb.dto.request.StbInfo;
 import com.lguplus.homeshoppingmoa.personalization.model.entity.SettopBox;
 import com.lguplus.homeshoppingmoa.personalization.repository.SettopBoxRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,7 @@ public class SettopBoxService {
     private final SettopBoxRepository settopBoxRepository;
 
     @Transactional
-    public void saveOrUpdate(Payload payload) {
+    public void saveOrUpdate(Payload<StbInfo> payload) {
         SettopBox byStbMacAndStbPhone = this.settopBoxRepository.findByStbMacAndStbSub(payload.getParam().getMacAddress(), payload.getParam().getSubNo());
 
         if (byStbMacAndStbPhone != null) {

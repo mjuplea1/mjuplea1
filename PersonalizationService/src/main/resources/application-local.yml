@@ -8,6 +8,7 @@ spring:
     stream:
       bindings:
         input-broadcast-product:
+          group: personalization-group
           destination: topic-broadcast-product
           content-type: application/json
         output_message_request:

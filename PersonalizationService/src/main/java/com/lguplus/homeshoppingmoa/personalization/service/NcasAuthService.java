@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lguplus.homeshoppingmoa.common.model.dto.RequestNcasAuthDto;
 import com.lguplus.homeshoppingmoa.common.model.dto.ResponseNcasAuthDto;
 import com.lguplus.homeshoppingmoa.common.model.stb.dto.request.Payload;
+import com.lguplus.homeshoppingmoa.common.model.stb.dto.request.StbInfo;
 import com.lguplus.homeshoppingmoa.common.sec.ncas.model.NcasUserDetails;
 import com.lguplus.homeshoppingmoa.common.wrapper.CommonModel;
 import com.lguplus.homeshoppingmoa.personalization.rest.NcasServiceApiClient;
@@ -32,7 +33,7 @@ public class NcasAuthService implements UserDetailsService {
     @SneakyThrows
     @Override
     public UserDetails loadUserByUsername(String payloadJson) {
-        Payload payload = this.objectMapper.readValue(payloadJson, Payload.class);
+        Payload<StbInfo> payload = this.objectMapper.readValue(payloadJson, Payload.class);
 
         RequestNcasAuthDto ncasAuthDto = new RequestNcasAuthDto(payload.getParam().getMemberNo(), payload.getParam().getSubNo(), payload.getParam().getMacAddress());
 

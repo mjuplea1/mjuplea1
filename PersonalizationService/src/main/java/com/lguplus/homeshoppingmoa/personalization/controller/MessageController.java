@@ -39,7 +39,7 @@ public class MessageController {
     )
     @PostMapping("/message/send")
     public <U extends NcasUserDetails> void sendMessage(@AuthenticationPrincipal U principal, RequestRootBody<RequestShareMessage> requestRootBody) {
-        StbInfo stbUserInfo = principal.getPayload().getParam();
+        StbInfo stbUserInfo = (StbInfo) principal.getPayload().getParam();
         RequestShareMessage requestShareMessage = requestRootBody.getParam();
 
         messageService.sendSharedMessage(stbUserInfo.getMacAddress(), stbUserInfo.getSubNo(), requestShareMessage);

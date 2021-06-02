@@ -20,8 +20,8 @@ FROM adoptopenjdk/openjdk8:latest
 LABEL maintainer="admin"
 VOLUME /tmp
 
-ARG SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-local}
-ENV SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-local}
+ARG SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-gke-dev}
+ENV SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-gke-dev}
 RUN echo ${SPRING_PROFILES_ACTIVE}
 
 COPY --from=build /PersonalizationService/build/libs/*.jar app.jar

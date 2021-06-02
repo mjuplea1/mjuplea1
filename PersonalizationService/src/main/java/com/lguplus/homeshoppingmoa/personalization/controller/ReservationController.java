@@ -41,7 +41,7 @@ public class ReservationController {
     )
     @PostMapping("/reservation/list")
     public <U extends NcasUserDetails> ResponseEntity<ResponseReservations> list(@AuthenticationPrincipal U principal, RequestRootBody<?> requestRootBody) {
-        StbInfo stbUserInfo = principal.getPayload().getParam();
+        StbInfo stbUserInfo = (StbInfo) principal.getPayload().getParam();
 
         return ResponseEntity.ok(reservationService.find(stbUserInfo.getMacAddress(), stbUserInfo.getSubNo()));
     }
@@ -58,7 +58,7 @@ public class ReservationController {
     )
     @PostMapping("/reservation/add")
     public <U extends NcasUserDetails> ResponseEntity<ResponseAddReservation> reservation(@AuthenticationPrincipal U principal, RequestRootBody<RequestReservation> requestRootBody) {
-        StbInfo stbUserInfo = principal.getPayload().getParam();
+        StbInfo stbUserInfo = (StbInfo) principal.getPayload().getParam();
         RequestReservation requestReservation = requestRootBody.getParam();
 
         return ResponseEntity.ok(reservationService.add(stbUserInfo.getMacAddress(), stbUserInfo.getSubNo(), requestReservation));
@@ -76,7 +76,7 @@ public class ReservationController {
     )
     @PostMapping("/reservation/cancel")
     public <U extends NcasUserDetails> void cancel(@AuthenticationPrincipal U principal, RequestRootBody<RequestReservationCancel> requestRootBody) {
-        StbInfo stbUserInfo = principal.getPayload().getParam();
+        StbInfo stbUserInfo = (StbInfo) principal.getPayload().getParam();
         RequestReservationCancel requestReservationCancel = requestRootBody.getParam();
 
         reservationService.remove(stbUserInfo.getMacAddress(), stbUserInfo.getSubNo(), requestReservationCancel);

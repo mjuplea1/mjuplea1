@@ -42,8 +42,8 @@ public class ImageSetController {
             }
     )
     @PostMapping
-    public <U extends NcasUserDetails> ResponseEntity<ResponseImageSet> imageSet (@AuthenticationPrincipal U principal, RequestRootBody<?> requestRootBody) {
-        StbInfo stbUserInfo = principal.getPayload().getParam();
+    public <U extends NcasUserDetails> ResponseEntity<ResponseImageSet> imageSet(@AuthenticationPrincipal U principal, RequestRootBody<?> requestRootBody) {
+        StbInfo stbUserInfo = (StbInfo) principal.getPayload().getParam();
 
         SettopBox settopBox = imageSetService.getImageSettingValue(stbUserInfo.getMacAddress(), stbUserInfo.getSubNo());
         return ResponseEntity.ok(ResponseImageSet.create(settopBox.getStbDisplayYn().value()));
@@ -60,8 +60,8 @@ public class ImageSetController {
             }
     )
     @PostMapping("/on")
-    public <U extends NcasUserDetails> ResponseEntity<ResponseImageSet> imageSetOn (@AuthenticationPrincipal U principal, RequestRootBody<?> requestRootBody) {
-        StbInfo stbUserInfo = principal.getPayload().getParam();
+    public <U extends NcasUserDetails> ResponseEntity<ResponseImageSet> imageSetOn(@AuthenticationPrincipal U principal, RequestRootBody<?> requestRootBody) {
+        StbInfo stbUserInfo = (StbInfo) principal.getPayload().getParam();
 
         SettopBox settopBox = imageSetService.updateImageSettingValueTurnOn(stbUserInfo.getMacAddress(), stbUserInfo.getSubNo());
         return ResponseEntity.ok(ResponseImageSet.create(settopBox.getStbDisplayYn().value()));
@@ -78,8 +78,8 @@ public class ImageSetController {
             }
     )
     @PostMapping("/off")
-    public <U extends NcasUserDetails> ResponseEntity<ResponseImageSet> imageSetOff (@AuthenticationPrincipal U principal, RequestRootBody<?> requestRootBody) {
-        StbInfo stbUserInfo = principal.getPayload().getParam();
+    public <U extends NcasUserDetails> ResponseEntity<ResponseImageSet> imageSetOff(@AuthenticationPrincipal U principal, RequestRootBody<?> requestRootBody) {
+        StbInfo stbUserInfo = (StbInfo) principal.getPayload().getParam();
 
         SettopBox settopBox = imageSetService.updateImageSettingValueTurnOff(stbUserInfo.getMacAddress(), stbUserInfo.getSubNo());
         return ResponseEntity.ok(ResponseImageSet.create(settopBox.getStbDisplayYn().value()));
